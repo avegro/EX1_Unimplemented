@@ -1,7 +1,7 @@
 package edu.cg;
 
 import java.awt.image.BufferedImage;
-
+import java.lang.*;
 public class SeamsCarver extends ImageProcessor {
 
 	// MARK: An inner interface for functional programming.
@@ -36,10 +36,83 @@ public class SeamsCarver extends ImageProcessor {
 		else
 			resizeOp = this::duplicateWorkingImage;
 
-		// TODO: You may initialize your additional fields and apply some preliminary
-		// calculations.
+		BufferedImage greyImage = this.greyscale();
+
 
 		this.logger.log("preliminary calculations were ended.");
+	}
+
+	public long[][] createEnergyMatrix(BufferedImage greyImage, boolean[][] mask){
+		int height = greyImage.getHeight();
+		int width = greyImage.getWidth();
+		long[][] ans = new long[height][width];
+		int e1;
+		int e2;
+		int e3;
+
+		for(int i = 0; i < height; i++){
+			for(int j = 0; j< width; j++){
+				e3 = (mask[i][j] == true) ? Integer.MIN_VALUE: 0;
+				e1 = (j < width-1) ? Math.abs(greyImage.getRGB(i,j) - greyImage.getRGB(i,j+1)): Math.abs(greyImage.getRGB(i,j) - greyImage.getRGB(i,j-1));
+				e2 = (i < height-1) ? Math.abs(greyImage.getRGB(i,j) - greyImage.getRGB(i+1,j)): Math.abs(greyImage.getRGB(i,j) - greyImage.getRGB(i-1,j));
+				ans[i][j] = e1 + e2 + e3;
+			}
+		}
+		return ans;
+	}
+
+	public long[][] calculateCostMatrix(long[][] energyMatrix){
+		int height = energyMatrix.length;
+		int width = energyMatrix[0].length;
+		long[][] ans = new long[height][width];
+		for(int i = 0; i < height; i++){
+			for(int j = 0; j < width; j++){
+				if (i == 0) {
+					ans[i][j] = energyMatrix[i][j];
+				}
+				if(j > 0 && j < width-1){
+					ans[i][j] = energyMatrix[i][j] + Math.min(Math.min(ans[i-1][j-1],ans[i-1][j]), ans[i-1][j+1]);
+				}
+				else if(j == 0){
+					ans[i][j] = energyMatrix[i][j] + Math.min(ans[i-1][j],ans[i-1][j+1]);
+				}
+				else{
+					ans[i][j] = energyMatrix[i][j] + Math.min(ans[i-1][j-1],ans[i-1][j]);
+				}
+			}
+		}
+		return ans;
+	}
+
+	public int[] findSeam(long[][] costMatrix, long[][] energyMatrix){
+		int height = costMatrix.length;
+		int width = costMatrix[0].length;
+		long minim = costMatrix[height-1][0];
+		int ind = 0;
+		int[] ans = new int[height];
+
+		for(int i = 0; i < width; i++){
+			if(costMatrix[height-1][i] < minim){
+				minim = costMatrix[height-1][i];
+				ind = i;
+			}
+		}
+
+		for(int j = height-1; j>0; j--){
+			ans[j] = ind;
+
+			if(costMatrix[j][ind] == energyMatrix[j][ind] + costMatrix[j-1][ind] + __________){
+
+			}
+			else if(costMatrix[j][ind] == energyMatrix[j][ind] + costMatrix[j-1][ind-1] + __________){
+				ind--;
+			}
+			else{
+				ind++;
+			}
+		}
+		return ans;
+
 	}
 
 	public BufferedImage resize() {
