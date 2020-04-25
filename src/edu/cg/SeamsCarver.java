@@ -26,7 +26,7 @@ public class SeamsCarver extends ImageProcessor {
 			boolean[][] imageMask) {
 		super((s) -> logger.log("Seam carving: " + s), workingImage, rgbWeights, outWidth, workingImage.getHeight());
 		this.initialHeight = workingImage.getHeight();
-		this.indicesMatrix = initializeIndices(outWidth, this.initialHeight);
+		initializeIndices();
 		numOfSeams = Math.abs(outWidth - inWidth);
 		this.imageMask = imageMask;
 		if (inWidth < 2 | inHeight < 2)
@@ -158,24 +158,26 @@ public class SeamsCarver extends ImageProcessor {
 	}
 
 
-		//	greyImageMain = this.greyscale();
-		//	this.energyMatrix = createEnergyMatrix(greyImageMain, this.imageMask);
-		//	this.costMatrix = calculateCostMatrix(energyMatrix);
-		//	int[] seam = findSeam(this.costMatrix, this.energyMatrix);
-		//	this.indicesMatrix = getIndicesMatrix(seam, this.outWidth);
-
 	private BufferedImage reduceImageWidth() {
 		greyImageMain = this.greyscale();
-		while(this.indicesMatrix[0].length > this.outWidth){
+        BufferedImage ans = newEmptyOutputSizedImage();
+        int pixelColor;
+        while(this.indicesMatrix[0].length > this.outWidth){
 			createEnergyMatrix();
 			calculateCostMatrix();
 			findSeam();
 			updateIndicesMatrix();
 		}
+		for(int i = 0; i < workingImage.getHeight(); i++){
+		    for(int j = 0; j < outWidth; j++){
+                pixelColor = workingImage.getRGB(i,indicesMatrix[i][j]);
+		        ans.setRGB(i,j,pixelColor);
+            }
+        }
+        return ans;
 
 
 
-		throw new UnimplementedMethodException("reduceImageWidth");
 	}
 
 	private BufferedImage increaseImageWidth() {
@@ -197,6 +199,7 @@ public class SeamsCarver extends ImageProcessor {
 				newMask[i][j] = (this.imageMask[i][jVal]);
 			}
 		}
+		return newMask;
 		// This method should return the mask of the resize image after seam carving.
 		// Meaning, after applying Seam Carving on the input image,
 		// getMaskAfterSeamCarving() will return a mask, with the same dimensions as the
@@ -204,6 +207,5 @@ public class SeamsCarver extends ImageProcessor {
 		// corresponding pixels.
 		// HINT: Once you remove (replicate) the chosen seams from the input image, you
 		// need to also remove (replicate) the matching entries from the mask as well.
-		throw new UnimplementedMethodException("getMaskAfterSeamCarving");
 	}
 }
