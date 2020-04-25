@@ -2,6 +2,8 @@ package edu.cg;
 
 import java.awt.image.BufferedImage;
 import java.lang.*;
+import java.util.Arrays;
+
 public class SeamsCarver extends ImageProcessor {
 
 	// MARK: An inner interface for functional programming.
@@ -21,6 +23,9 @@ public class SeamsCarver extends ImageProcessor {
 	int initialHeight;
 	int[] seam;
 	BufferedImage greyImageMain;
+	int[][] savedSeams;
+	int[] currentSeam;
+	int[][] initialIndices;
 
 	public SeamsCarver(Logger logger, BufferedImage workingImage, int outWidth, RGBWeights rgbWeights,
 			boolean[][] imageMask) {
@@ -28,6 +33,8 @@ public class SeamsCarver extends ImageProcessor {
 		this.initialHeight = workingImage.getHeight();
 		initializeIndices();
 		numOfSeams = Math.abs(outWidth - inWidth);
+		this.savedSeams = new int[numOfSeams][workingImage.getHeight()];
+		this.currentSeam = new int[workingImage.getHeight()];
 		this.imageMask = imageMask;
 		if (inWidth < 2 | inHeight < 2)
 			throw new RuntimeException("Can not apply seam carving: workingImage is too small");
@@ -43,6 +50,15 @@ public class SeamsCarver extends ImageProcessor {
 		else
 			resizeOp = this::duplicateWorkingImage;
 
+		greyImageMain = this.greyscale();
+		int i = 0;
+		while(this.indicesMatrix[0].length > this.outWidth){
+			createEnergyMatrix();
+			calculateCostMatrix();
+			findSeam();
+			updateIndicesMatrix();
+			this.savedSeams[i++] = this.currentSeam;
+		}
 
 
 		this.logger.log("preliminary calculations were ended.");
@@ -129,10 +145,12 @@ public class SeamsCarver extends ImageProcessor {
 
 			}
 		}
+		this.initialIndices = ans;
 		this.indicesMatrix = ans;
 	}
 
 	public void updateIndicesMatrix(){
+	    int[] seamIndices = new int[this.workingImage.getHeight()];
 		int [][] ans = new int[this.seam.length][this.indicesMatrix[0].length - 1];
 		Boolean found;
 		for(int k = 0; k <  this.seam.length; k++){
@@ -141,6 +159,7 @@ public class SeamsCarver extends ImageProcessor {
 				if(m == this.seam[k]){
 					ans[k][m] = indicesMatrix[k][m+1];
 					found = true;
+					seamIndices[k] = indicesMatrix[k][m];
 				}
 				if (found){
 					ans[k][m] = indicesMatrix[k][m+1];
@@ -150,6 +169,7 @@ public class SeamsCarver extends ImageProcessor {
 				}
 			}
 		}
+		this.currentSeam = seamIndices;
 		this.indicesMatrix = ans;
 	}
 
@@ -159,15 +179,10 @@ public class SeamsCarver extends ImageProcessor {
 
 
 	private BufferedImage reduceImageWidth() {
-		greyImageMain = this.greyscale();
+
         BufferedImage ans = newEmptyOutputSizedImage();
         int pixelColor;
-        while(this.indicesMatrix[0].length > this.outWidth){
-			createEnergyMatrix();
-			calculateCostMatrix();
-			findSeam();
-			updateIndicesMatrix();
-		}
+
 		for(int i = 0; i < workingImage.getHeight(); i++){
 		    for(int j = 0; j < outWidth; j++){
                 pixelColor = workingImage.getRGB(i,indicesMatrix[i][j]);
@@ -181,9 +196,30 @@ public class SeamsCarver extends ImageProcessor {
 	}
 
 	private BufferedImage increaseImageWidth() {
-		// TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("increaseImageWidth");
+		int pixelColor;
+		BufferedImage ans = newEmptyOutputSizedImage();
+		int whichColumn = initialIndices.length;
+		int[][] indxArr = new int[workingImage.getHeight()][this.outWidth];
+		System.arraycopy (initialIndices, 0, indxArr, 0, initialIndices.length);
+		System.arraycopy(this.savedSeams, 0, indxArr, whichColumn, this.savedSeams.length);
+		//int counter = 0;
+		//for(int i = whichColumn; i < indxArr.length; i++){
+		//	indxArr[i] = this.savedSeams[counter++];
+		//}
+
+		for(int j = 0; j < indxArr.length; j++){
+			Arrays.sort(indxArr[j]);
+		}
+
+		for(int i = 0; i < workingImage.getHeight(); i++){
+			for(int j = 0; j < outWidth; j++){
+				pixelColor = workingImage.getRGB(i,indxArr[i][j]);
+				ans.setRGB(i,j,pixelColor);
+			}
+		}
+		return ans;
 	}
+
 
 	public BufferedImage showSeams(int seamColorRGB) {
 		// TODO: Implement this method (bonus), remove the exception.
