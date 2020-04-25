@@ -66,78 +66,93 @@ public class SeamsCarver extends ImageProcessor {
 
 
 	public void createEnergyMatrix(){
-		int height = this.indicesMatrix.length;
-		int width = this.indicesMatrix[0].length;
-		long[][] ans = new long[height][width];
-		int e1;
-		int e2;
-		int e3;
+		try{
+			int height = this.indicesMatrix.length;
+			int width = this.indicesMatrix[0].length;
+			long[][] ans = new long[height][width];
+			int e1;
+			int e2;
+			int e3;
 
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j< width; j++){
-				e3 = (this.imageMask[i][indicesMatrix[i][j]]) ? Integer.MIN_VALUE: 0;
-				e1 = (indicesMatrix[i][j] < width-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j+1])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j-1]));
-				e2 = (i < height-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i+1,indicesMatrix[i][j])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i-1,indicesMatrix[i][j]));
-				ans[i][j] = e1 + e2 + e3;
+			for(int i = 0; i < height; i++){
+				for(int j = 0; j< width; j++){
+					e3 = (this.imageMask[i][indicesMatrix[i][j]]) ? Integer.MIN_VALUE: 0;
+					e1 = (indicesMatrix[i][j] < width-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j+1])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j-1]));
+					e2 = (i < height-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i+1,indicesMatrix[i][j])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i-1,indicesMatrix[i][j]));
+					ans[i][j] = e1 + e2 + e3;
+				}
 			}
+			this.energyMatrix = ans;
 		}
-		this.energyMatrix = ans;
+		catch(Exception e){
+			throw new RuntimeException("calculate energy matrix failed");
+		}
 	}
 
 	public void calculateCostMatrix(){
-		int height = this.energyMatrix.length;
-		int width = this.energyMatrix[0].length;
-		long[][] ans = new long[height][width];
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < width; j++){
-				if (i == 0) {
-					ans[i][j] = this.energyMatrix[i][j];
-				}
-				if(j > 0 && j < width-1){
-					ans[i][j] = this.energyMatrix[i][j] + Math.min(Math.min(ans[i-1][j-1],ans[i-1][j]), ans[i-1][j+1]);
-				}
-				else if(j == 0){
-					ans[i][j] = this.energyMatrix[i][j] + Math.min(ans[i-1][j],ans[i-1][j+1]);
-				}
-				else{
-					ans[i][j] = this.energyMatrix[i][j] + Math.min(ans[i-1][j-1],ans[i-1][j]);
+		try{
+			int height = this.energyMatrix.length;
+			int width = this.energyMatrix[0].length;
+			long[][] ans = new long[height][width];
+			for(int i = 0; i < height; i++){
+				for(int j = 0; j < width; j++){
+					if (i == 0) {
+						ans[i][j] = this.energyMatrix[i][j];
+					}
+					if(j > 0 && j < width-1){
+						ans[i][j] = this.energyMatrix[i][j] + Math.min(Math.min(ans[i-1][j-1],ans[i-1][j]), ans[i-1][j+1]);
+					}
+					else if(j == 0){
+						ans[i][j] = this.energyMatrix[i][j] + Math.min(ans[i-1][j],ans[i-1][j+1]);
+					}
+					else{
+						ans[i][j] = this.energyMatrix[i][j] + Math.min(ans[i-1][j-1],ans[i-1][j]);
+					}
 				}
 			}
+			this.costMatrix = ans;
 		}
-		this.costMatrix = ans;
+		catch(Exception e){
+			throw new RuntimeException("calculate cost matrix failed");
+		}
 	}
 
 	public void findSeam(){
-		int height = this.costMatrix.length;
-		int width = this.costMatrix[0].length;
-		long minim = this.costMatrix[height-1][0];
-		int ind = 0;
-		int[] ans = new int[height];
+		try{
+			int height = this.costMatrix.length;
+			int width = this.costMatrix[0].length;
+			long minim = this.costMatrix[height-1][0];
+			int ind = 0;
+			int[] ans = new int[height];
 
-		for(int i = 0; i < width; i++){
-			if(this.costMatrix[height-1][i] < minim){
-				minim = this.costMatrix[height-1][i];
-				ind = i;
+			for(int i = 0; i < width; i++){
+				if(this.costMatrix[height-1][i] < minim){
+					minim = this.costMatrix[height-1][i];
+					ind = i;
+				}
 			}
+
+			for(int j = height-1; j>0; j--){
+				ans[j] = ind;
+
+				if(this.costMatrix[j][ind] == this.energyMatrix[j][ind] + this.costMatrix[j-1][ind]){
+
+				}
+				else if(this.costMatrix[j][ind] == this.energyMatrix[j][ind] + this.costMatrix[j-1][ind-1]){
+					ind--;
+				}
+				else{
+					ind++;
+				}
+			}
+			this.seam = ans;
 		}
-
-		for(int j = height-1; j>0; j--){
-			ans[j] = ind;
-
-			if(this.costMatrix[j][ind] == this.energyMatrix[j][ind] + this.costMatrix[j-1][ind] + __________){
-
-			}
-			else if(this.costMatrix[j][ind] == this.energyMatrix[j][ind] + this.costMatrix[j-1][ind-1] + __________){
-				ind--;
-			}
-			else{
-				ind++;
-			}
+		catch(Exception e){
+			throw new RuntimeException("find seam function failed");
 		}
-		this.seam = ans;
 
 	}
-	public int[][] initializeIndices(){
+	public void initializeIndices(){
 		int[][] ans = new int[workingImage.getHeight()][workingImage.getWidth()];
 		for(int i = 0; i < workingImage.getHeight(); i++){
 			for(int j = 0; j < workingImage.getWidth(); j++){
@@ -150,27 +165,32 @@ public class SeamsCarver extends ImageProcessor {
 	}
 
 	public void updateIndicesMatrix(){
-	    int[] seamIndices = new int[this.workingImage.getHeight()];
-		int [][] ans = new int[this.seam.length][this.indicesMatrix[0].length - 1];
-		Boolean found;
-		for(int k = 0; k <  this.seam.length; k++){
-			found = false;
-			for(int m = 0; m < this.indicesMatrix[0].length-1; m++){
-				if(m == this.seam[k]){
-					ans[k][m] = indicesMatrix[k][m+1];
-					found = true;
-					seamIndices[k] = indicesMatrix[k][m];
-				}
-				if (found){
-					ans[k][m] = indicesMatrix[k][m+1];
-				}
-				else{
-					ans[k][m] = indicesMatrix[k][m];
+		try{
+			int[] seamIndices = new int[this.workingImage.getHeight()];
+			int [][] ans = new int[this.seam.length][this.indicesMatrix[0].length - 1];
+			Boolean found;
+			for(int k = 0; k <  this.seam.length; k++){
+				found = false;
+				for(int m = 0; m < this.indicesMatrix[0].length-1; m++){
+					if(m == this.seam[k]){
+						ans[k][m] = indicesMatrix[k][m+1];
+						found = true;
+						seamIndices[k] = indicesMatrix[k][m];
+					}
+					if (found){
+						ans[k][m] = indicesMatrix[k][m+1];
+					}
+					else{
+						ans[k][m] = indicesMatrix[k][m];
+					}
 				}
 			}
+			this.currentSeam = seamIndices;
+			this.indicesMatrix = ans;
 		}
-		this.currentSeam = seamIndices;
-		this.indicesMatrix = ans;
+		catch(Exception e){
+			throw new RuntimeException("update indices matrix function failed");
+		}
 	}
 
 	public BufferedImage resize() {
@@ -201,11 +221,10 @@ public class SeamsCarver extends ImageProcessor {
 		int whichColumn = initialIndices.length;
 		int[][] indxArr = new int[workingImage.getHeight()][this.outWidth];
 		System.arraycopy (initialIndices, 0, indxArr, 0, initialIndices.length);
-		System.arraycopy(this.savedSeams, 0, indxArr, whichColumn, this.savedSeams.length);
-		//int counter = 0;
-		//for(int i = whichColumn; i < indxArr.length; i++){
-		//	indxArr[i] = this.savedSeams[counter++];
-		//}
+		int counter = 0;
+		for(int i = whichColumn; i < indxArr.length; i++){
+			indxArr[i] = this.savedSeams[counter++];
+		}
 
 		for(int j = 0; j < indxArr.length; j++){
 			Arrays.sort(indxArr[j]);
@@ -222,8 +241,20 @@ public class SeamsCarver extends ImageProcessor {
 
 
 	public BufferedImage showSeams(int seamColorRGB) {
-		// TODO: Implement this method (bonus), remove the exception.
-		throw new UnimplementedMethodException("showSeams");
+		BufferedImage ans = newEmptyOutputSizedImage();
+		// copy original image
+		for(int i = 0; i < workingImage.getHeight(); i++){
+			for(int j = 0; j < this.outWidth; j++){
+				ans.setRGB(i,j,workingImage.getRGB(i,j));
+			}
+		}
+		// change color of seams
+		for(int i = 0; i < savedSeams.length; i++){
+			for(int j = 0; j < savedSeams[0].length; j++){
+				ans.setRGB(j,savedSeams[i][j],seamColorRGB);
+			}
+		}
+		return ans;
 	}
 
 	public boolean[][] getMaskAfterSeamCarving() {
