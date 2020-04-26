@@ -252,8 +252,8 @@ public class MenuWindow extends JFrame implements Logger {
 	}
 
 	public void removeObjectFromImage(boolean[][] srcMask) {
-		boolean[][] maskDuplicate = duplicateMask(this.imageMask);
-		BufferedImage res;
+		boolean[][] maskDuplicate = duplicateMask(srcMask);
+		BufferedImage res = new BufferedImage(5,5,BufferedImage.TYPE_INT_RGB);
 		boolean[][] falseArr = new boolean[this.workingImage.getHeight()][this.workingImage.getWidth()];
 		while(compareArrs(maskDuplicate, falseArr) == 0){
 			int maxVal = 0;
@@ -279,9 +279,6 @@ public class MenuWindow extends JFrame implements Logger {
 		}
 
 
-		// TODO: After completing the implementation - make sure you present the result.
-		// Just uncomment the following line, and replace 'result' with your
-		// result variable.
 		 present(res, "Image After Object Removal");
 	}
 
