@@ -261,20 +261,22 @@ public class MenuWindow extends JFrame implements Logger {
 			for(int i = 0; i < maskDuplicate.length; i++){
 				for(int j = 0; j < maskDuplicate[0].length; j++){
 					maskRow = (maskDuplicate[i][j]) ? maskRow + 1 : maskRow;
+					if (maskRow > 0){
+					}
 				}
 				maxVal = (maskRow > maxVal) ? maskRow : maxVal;
 				maskRow = 0;
 			}
 
 			int imageWidth = this.workingImage.getWidth();
-			int delt = Math.min((imageWidth/3)+1,maxVal);
-			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth() - delt, colorMixer.getRGBWeights(),
+			int delt = Math.min((imageWidth/3)-1,maxVal);
+			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth(), colorMixer.getRGBWeights(),
 					maskDuplicate);
 			maskDuplicate = rem.getMaskAfterSeamCarving();
 			SeamsCarver addBack = new SeamsCarver(this, rem.resize(), workingImage.getWidth(), colorMixer.getRGBWeights(), maskDuplicate);
-			addBack.resize();
+			res = addBack.resize();
 			maskDuplicate = addBack.getMaskAfterSeamCarving();
-			res = addBack.resize(); // can i do this on same line as other? FIX
+
 
 		}
 

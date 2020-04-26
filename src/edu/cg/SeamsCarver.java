@@ -277,51 +277,36 @@ public class SeamsCarver extends ImageProcessor {
 	}
 
 	public static int[][] transposeMatrix(int[][] matrix){
-		for(int i = 0; i < matrix.length; i++){
-			for(int j = i+1; j < matrix[0].length; j++){
-				int temp = matrix[i][j];
-				matrix[i][j] = matrix[j][i];
-				matrix[j][i] = temp;
+		int[][] ans = new int[matrix[0].length][matrix.length];
+		for(int i = 0; i < ans.length; i++){
+			for(int j = 0; j < ans[0].length; j++){
+				ans[i][j] = matrix[j][i];
 			}
 		}
-		return matrix;
+		return ans;
 	}
 	private BufferedImage increaseImageWidth() {
 		int pixelColor;
 		BufferedImage ans = newEmptyOutputSizedImage();
 		int whichColumn = initialIndices[0].length;
-		int[][] indxArr = new int[workingImage.getHeight()][this.workingImage.getWidth() + this.numOfSeams];
-		System.arraycopy (initialIndices, 0, indxArr, 0, initialIndices.length);
-		int count = 0;
-		int[][] transposedSeams = transposeMatrix(savedSeams);
-
-		for(int p = 0; p < indxArr.length; p++){
-			count = 0;
-			for(int q = 0; q < indxArr[0].length; q++){
-				if(q >= whichColumn){
-					indxArr[p][q] = transposedSeams[p][count++];
-				}
+		int[][] indxArr = new int[workingImage.getHeight()][this.outWidth];
+		for(int b = 0; b < initialIndices.length; b++){
+			for(int q = 0; q < initialIndices[0].length; q++){
+				indxArr[b][q] = initialIndices[b][q];
 			}
 		}
-
-
+		int[][] transp = transposeMatrix(indxArr);
+		System.arraycopy(savedSeams, 0, transp, whichColumn, this.numOfSeams);
+		indxArr = transposeMatrix(transp);
 
 		for(int j = 0; j < indxArr.length; j++){
-			System.out.println("sorting array #: " + j);
 			Arrays.sort(indxArr[j]);
 		}
 
-		for(int k = 0; k < indxArr.length; k++){
-			for(int m = 0; m < indxArr[0].length; m++){
-				System.out.print(" " + indxArr[k][m]);
-			}
-			System.out.println();
-		}
 
 		for(int i = 0; i < workingImage.getHeight(); i++){
 			for(int j = 0; j < this.outWidth; j++){
 				pixelColor = workingImage.getRGB(indxArr[i][j],i);
-				System.out.println("copying from index: " + i + ", " + indxArr[i][j] + " in the original image");
 				ans.setRGB(j,i,pixelColor);
 			}
 		}
