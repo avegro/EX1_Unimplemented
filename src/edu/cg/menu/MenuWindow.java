@@ -244,8 +244,8 @@ public class MenuWindow extends JFrame implements Logger {
 
 	public int compareArrs(boolean[][] arr1, boolean[][] arr2){
 		for(int i = 0; i < arr1.length; i++){
-			if(!Arrays.equals(arr1[i], arr2[i])){
-				return 0;
+			for(int j = 0; j < arr1[0].length; j++){
+				if(arr1[i][j] != arr2 [i][j]) return 0;
 			}
 		}
 		return 1;
@@ -255,6 +255,12 @@ public class MenuWindow extends JFrame implements Logger {
 		boolean[][] maskDuplicate = duplicateMask(srcMask);
 		BufferedImage res = new BufferedImage(5,5,BufferedImage.TYPE_INT_RGB);
 		boolean[][] falseArr = new boolean[this.workingImage.getHeight()][this.workingImage.getWidth()];
+		System.out.println("about to run test");
+		System.out.println("falseArr : height, width: " + falseArr.length + ", " + falseArr[0].length);
+		System.out.println("duplicateMask : height, width: " + maskDuplicate.length + ", " + maskDuplicate[0].length);
+
+		int test = compareArrs(maskDuplicate, falseArr);
+		System.out.println("comparison result: " + test);
 		while(compareArrs(maskDuplicate, falseArr) == 0){
 			int maxVal = 0;
 			int maskRow = 0;
@@ -267,15 +273,23 @@ public class MenuWindow extends JFrame implements Logger {
 				maxVal = (maskRow > maxVal) ? maskRow : maxVal;
 				maskRow = 0;
 			}
+			System.out.println(maxVal);
+
 
 			int imageWidth = this.workingImage.getWidth();
 			int delt = Math.min((imageWidth/3)-1,maxVal);
-			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth(), colorMixer.getRGBWeights(),
+			System.out.println("about to make new SeamsCarver");
+			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth() - delt, colorMixer.getRGBWeights(),
 					maskDuplicate);
+			rem.resize();
+			System.out.println("rem resize successful");
 			maskDuplicate = rem.getMaskAfterSeamCarving();
+			System.out.println("making second SeamsCarver");
 			SeamsCarver addBack = new SeamsCarver(this, rem.resize(), workingImage.getWidth(), colorMixer.getRGBWeights(), maskDuplicate);
 			res = addBack.resize();
 			maskDuplicate = addBack.getMaskAfterSeamCarving();
+			System.out.println("end of loop");
+
 
 
 		}

@@ -319,13 +319,13 @@ public class SeamsCarver extends ImageProcessor {
 		// copy original image
 		for(int i = 0; i < workingImage.getHeight(); i++){
 			for(int j = 0; j < this.outWidth; j++){
-				ans.setRGB(i,j,workingImage.getRGB(i,j));
+				ans.setRGB(j,i,workingImage.getRGB(j,i));
 			}
 		}
 		// change color of seams
 		for(int i = 0; i < savedSeams.length; i++){
 			for(int j = 0; j < savedSeams[0].length; j++){
-				ans.setRGB(j,savedSeams[i][j],seamColorRGB);
+				ans.setRGB(savedSeams[i][j],j,seamColorRGB);
 			}
 		}
 		return ans;
