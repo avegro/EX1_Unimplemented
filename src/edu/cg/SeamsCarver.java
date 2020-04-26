@@ -73,14 +73,16 @@ public class SeamsCarver extends ImageProcessor {
 			int e1;
 			int e2;
 			int e3;
-
+			System.out.println("height, width: " + height + ", " + width);
 			for(int i = 0; i < height; i++){
 				for(int j = 0; j< width; j++){
 					e3 = (this.imageMask[i][indicesMatrix[i][j]]) ? Integer.MIN_VALUE: 0;
-					e1 = (indicesMatrix[i][j] < width-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j+1])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j-1]));
+					e1 = (j < width-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j+1])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i,indicesMatrix[i][j-1]));
 					e2 = (i < height-1) ? Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i+1,indicesMatrix[i][j])): Math.abs(greyImageMain.getRGB(i,indicesMatrix[i][j]) - greyImageMain.getRGB(i-1,indicesMatrix[i][j]));
 					ans[i][j] = e1 + e2 + e3;
+					System.out.print(ans[i][j] + " ");
 				}
+				System.out.println();
 			}
 			this.energyMatrix = ans;
 		}

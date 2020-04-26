@@ -242,10 +242,40 @@ public class MenuWindow extends JFrame implements Logger {
 		imageMask = duplicateMask(srcMask);
 	}
 
-	public void removeObjectFromImage(boolean[][] srcMask) {
+	public int compareArrs(boolean[][] arr1, boolean[][] arr2){
+		for(int i = 0; i < arr1.length; i++){
+			if(!Arrays.equals(arr1[i], arr2[i])){
+				return 0;
+			}
+		}
+		return 1;
+	}
 
-		// TODO: Implement this method, remove the exception.
-		throw new UnimplementedMethodException("removeObjectFromImage");
+	public void removeObjectFromImage(boolean[][] srcMask) {
+		boolean[][] maskDuplicate = duplicateMask(this.imageMask);
+		boolean[][] falseArr = new boolean[this.workingImage.getHeight()][this.workingImage.getWidth()];
+		while(compareArrs(maskDuplicate, falseArr) == 0){
+			int maxVal = 0;
+			int maskRow = 0;
+			for(int i = 0; i < imageMask.length; i++){
+				for(int j = 0; j < imageMask[0].length; j++){
+					maskRow = (imageMask[i][j]) ? maskRow + 1 : maskRow;
+				}
+				maxVal = (maskRow > maxVal) ? maskRow : maxVal;
+				maskRow = 0;
+			}
+			int delt;
+			int imageWidth = this.workingImage.getWidth();
+			delt = Math.min((imageWidth/3)+1,maxVal);
+			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth() - delt, colorMixer.getRGBWeights(),
+					maskDuplicate);
+			maskDuplicate = rem.getMaskAfterSeamCarving();
+			SeamsCarver addBack = new SeamsCarver(this, rem.resize(), workingImage.getWidth(), colorMixer.getRGBWeights(), maskDuplicate);
+			addBack.resize();
+			maskDuplicate = addBack.getMaskAfterSeamCarving();
+
+		}
+
 
 		// TODO: After completing the implementation - make sure you present the result.
 		// Just uncomment the following line, and replace 'result' with your
