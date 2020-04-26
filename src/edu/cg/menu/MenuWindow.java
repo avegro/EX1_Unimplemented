@@ -253,26 +253,28 @@ public class MenuWindow extends JFrame implements Logger {
 
 	public void removeObjectFromImage(boolean[][] srcMask) {
 		boolean[][] maskDuplicate = duplicateMask(this.imageMask);
+		BufferedImage res;
 		boolean[][] falseArr = new boolean[this.workingImage.getHeight()][this.workingImage.getWidth()];
 		while(compareArrs(maskDuplicate, falseArr) == 0){
 			int maxVal = 0;
 			int maskRow = 0;
-			for(int i = 0; i < imageMask.length; i++){
-				for(int j = 0; j < imageMask[0].length; j++){
-					maskRow = (imageMask[i][j]) ? maskRow + 1 : maskRow;
+			for(int i = 0; i < maskDuplicate.length; i++){
+				for(int j = 0; j < maskDuplicate[0].length; j++){
+					maskRow = (maskDuplicate[i][j]) ? maskRow + 1 : maskRow;
 				}
 				maxVal = (maskRow > maxVal) ? maskRow : maxVal;
 				maskRow = 0;
 			}
-			int delt;
+
 			int imageWidth = this.workingImage.getWidth();
-			delt = Math.min((imageWidth/3)+1,maxVal);
+			int delt = Math.min((imageWidth/3)+1,maxVal);
 			SeamsCarver rem = new SeamsCarver(this, this.workingImage, this.workingImage.getWidth() - delt, colorMixer.getRGBWeights(),
 					maskDuplicate);
 			maskDuplicate = rem.getMaskAfterSeamCarving();
 			SeamsCarver addBack = new SeamsCarver(this, rem.resize(), workingImage.getWidth(), colorMixer.getRGBWeights(), maskDuplicate);
 			addBack.resize();
 			maskDuplicate = addBack.getMaskAfterSeamCarving();
+			res = addBack.resize(); // can i do this on same line as other? FIX
 
 		}
 
@@ -280,7 +282,7 @@ public class MenuWindow extends JFrame implements Logger {
 		// TODO: After completing the implementation - make sure you present the result.
 		// Just uncomment the following line, and replace 'result' with your
 		// result variable.
-		// present(result, "Image After Object Removal");
+		 present(res, "Image After Object Removal");
 	}
 
 	public void maskImage() {
